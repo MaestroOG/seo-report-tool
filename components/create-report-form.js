@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Trash, Download } from 'lucide-react'
 import Toggle from './generalComps/Toggle'
+import createReport from '@/action/report'
 
 export default function CreateReportForm() {
     const [loading, setLoading] = useState(false)
@@ -52,10 +53,22 @@ export default function CreateReportForm() {
         plan90: ''
     })
 
+    const [state, formAction, isPending] = useActionState(createReport.bind(null, form), {});
+
     /* ---------------- Helpers ---------------- */
 
     const update = (key, value) =>
         setForm(prev => ({ ...prev, [key]: value }))
+
+    const updateNested = (section, key, value) => {
+        setForm(prev => ({
+            ...prev,
+            [section]: {
+                ...prev[section],
+                [key]: value
+            }
+        }));
+    };
 
     const updateArray = (name, index, key, value) => {
         const copy = [...(form)[name]]
@@ -83,7 +96,7 @@ export default function CreateReportForm() {
 
     return (
         <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-10">
-            <div className="flex flex-col gap-6">
+            <form action={formAction} className="flex flex-col gap-6">
 
                 <header>
                     <h1 className="text-2xl font-bold text-slate-900">Create SEO Report</h1>
@@ -135,7 +148,7 @@ export default function CreateReportForm() {
                                     <Input
                                         placeholder="e.g. 3 Years"
                                         value={form.websiteOverview.domainAge}
-                                        onChange={e => updateOverview('domainAge', e.target.value)}
+                                        onChange={e => updateNested('websiteOverview', 'domainAge', e.target.value)}
                                     />
                                 </div>
 
@@ -144,7 +157,7 @@ export default function CreateReportForm() {
                                     <Input
                                         placeholder="e.g. WordPress"
                                         value={form.websiteOverview.cms}
-                                        onChange={e => updateOverview('cms', e.target.value)}
+                                        onChange={e => updateNested('websiteOverview', 'cms', e.target.value)}
                                     />
                                 </div>
 
@@ -153,7 +166,7 @@ export default function CreateReportForm() {
                                     <Input
                                         placeholder="e.g. Technology Services"
                                         value={form.websiteOverview.industry}
-                                        onChange={e => updateOverview('industry', e.target.value)}
+                                        onChange={e => updateNested('websiteOverview', 'industry', e.target.value)}
                                     />
                                 </div>
 
@@ -162,7 +175,7 @@ export default function CreateReportForm() {
                                     <Input
                                         placeholder="e.g. Businesses & Professionals"
                                         value={form.websiteOverview.targetAudience}
-                                        onChange={e => updateOverview('targetAudience', e.target.value)}
+                                        onChange={e => updateNested('websiteOverview', 'targetAudience', e.target.value)}
                                     />
                                 </div>
 
@@ -171,7 +184,7 @@ export default function CreateReportForm() {
                                     <Input
                                         placeholder="e.g. Global"
                                         value={form.websiteOverview.targetLocation}
-                                        onChange={e => updateOverview('targetLocation', e.target.value)}
+                                        onChange={e => updateNested('websiteOverview', 'targetLocation', e.target.value)}
                                     />
                                 </div>
                             </CardContent>
@@ -310,12 +323,12 @@ export default function CreateReportForm() {
 
                 <div className="flex justify-end gap-3">
                     {error && <p className="text-sm text-red-600">{error}</p>}
-                    <Button disabled={loading} className="gap-2">
-                        {loading ? 'Generating…' : 'Generate PDF'}
+                    <Button disabled={isPending} className="gap-2">
+                        {isPending ? 'Generating…' : 'Generate PDF'}
                         <Download className="h-4 w-4" />
                     </Button>
                 </div>
-            </div>
+            </form>
         </div>
     )
 }
