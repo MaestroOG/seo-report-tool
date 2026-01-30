@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -90,6 +90,29 @@ export default function CreateReportForm() {
 
     /* ---------------- Submit ---------------- */
 
+    useEffect(() => {
+        if (!state?.success || !state?.pdf) return
+
+        const byteCharacters = atob(state.pdf);
+        const byteNumbers = new Array(byteCharacters.length);
+
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+
+        const blob = new Blob([new Uint8Array(byteNumbers)], {
+            type: 'application/pdf'
+        })
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${form.clientName || 'seo-report'}.pdf`
+        a.click()
+
+        URL.revokeObjectURL(url)
+    }, [state])
 
 
     /* ---------------- UI ---------------- */
@@ -322,8 +345,8 @@ export default function CreateReportForm() {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                    {error && <p className="text-sm text-red-600">{error}</p>}
-                    <Button disabled={isPending} className="gap-2">
+                    {!state?.success && <p className="text-sm text-red-600">{state?.message}</p>}
+                    <Button type='submit' disabled={isPending} className="gap-2">
                         {isPending ? 'Generating…' : 'Generate PDF'}
                         <Download className="h-4 w-4" />
                     </Button>
