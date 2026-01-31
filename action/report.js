@@ -4,7 +4,6 @@ import { generateSeoPdf } from "@/lib/pdf/generateSeoReport";
 
 export default async function createReport(form, prevState, formData) {
     try {
-        console.log(form)
         const pdfBuffer = await generateSeoPdf(form);
 
         return {
